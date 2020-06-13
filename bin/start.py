@@ -33,6 +33,19 @@ def exec_command(update, context):
     except Exception as e:
         context.bot.send_message(chat_id=update.effective_chat.id, text=str(e))
 
+def publicip(update, context):
+    #command = "dig @ns1-1.akamaitech.net ANY whoami.akamai.net +short"
+    #print(update.message.text)
+    command = update.message.text.replace('/', '')
+    try:
+        output = subprocess.check_output(command, cwd= curr_dir).decode('utf-8')
+        logging.info("%s: %s", command, output)
+        if output:
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output)
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+    except Exception as e:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=str(e))
 
 def main():
     logging_location = log_location + log_name
@@ -46,8 +59,10 @@ def main():
         updater = Updater(token= token_val, use_context= True)
         dispatcher = updater.dispatcher
         start_handler = CommandHandler('start',start)
+        publicip_handler = CommandHandler('publicip',publicip)
         command_message_handler = MessageHandler(command_filter, exec_command)
         dispatcher.add_handler(start_handler)
+        dispatcher.add_handler(publicip_handler)
         dispatcher.add_handler(command_message_handler)
         logging.info("Successfully initialized handlers")
     except ValueError as ex:
